@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Create a demo website with HTML and CSS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+  <h1 id="title">Create a demo website with HTML and CSS</h1>
+  <div id="content" class="mb-3">
+    <p>This site was auto-generated for TDS Project.</p>
+  </div>
+
+  <script>
+    window.__ROUND__ = 1;
+
+    async function render() {
+      const content = document.getElementById('content');
+      const mdEl = document.createElement('div');
+      mdEl.id = 'markdown-output';
+      content.appendChild(mdEl);
+
+      // Convert simple markdown to HTML
+      function mdToHtml(md) {
+        return md
+          .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
+          .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
+          .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/\`([^\`]+)\`/g, '<code>$1</code>')
+          .replace(/\n/g, '<br/>');
+      }
+
+      // Load and display input.md if it exists
+      try {
+        const r = await fetch('input.md');
+        if (r.ok) {
+          const text = await r.text();
+          mdEl.innerHTML = mdToHtml(text);
+        }
+      } catch (e) {
+        console.error('No markdown found', e);
+      }
+
+      // Round 2 — Add tabs and word count badge
+      if (window.__ROUND__ === 2) {
+        const tabs = document.createElement('div');
+        tabs.id = 'markdown-tabs';
+        tabs.innerHTML = `
+          <div class="btn-group mb-2">
+            <button class="btn btn-sm btn-primary">Rendered</button>
+            <button class="btn btn-sm btn-outline-secondary">Source</button>
+          </div>
+          <div id="markdown-source" class="d-none"></div>
+          <div id="markdown-word-count" class="badge text-bg-secondary">0 words</div>
+        `;
+        content.prepend(tabs);
+
+        try {
+          const r2 = await fetch('input.md');
+          if (r2.ok) {
+            const text2 = await r2.text();
+            document.getElementById('markdown-source').textContent = text2;
+            const words = (text2.trim().split(/\s+/).filter(Boolean).length);
+            document.getElementById('markdown-word-count').textContent =
+              new Intl.NumberFormat().format(words) + ' words';
+          }
+        } catch (e) {
+          console.error('No markdown for round 2', e);
+        }
+      }
+    }
+    render();
+  </script>
+</body>
+</html>
